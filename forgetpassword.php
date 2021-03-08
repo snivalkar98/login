@@ -1,26 +1,36 @@
 <?php
 include "config.php";
 session_start();
-$message= $link = '';
+$_SESSION["forgetpass_timestamp"] = time();
+echo $_SESSION["forgetpass_timestamp"];
+$link= '';
+// $message= $link = '';
 if(isset($_POST['submit'])){
     $email = $_POST['email'];
-    $subject = "Resset password";
+    $subject = "Here's your link for password Resset";
     $headers = "From: snivalkar1998@gmail.com";
     // echo $email;
-    $query = "SELECT * from userdata where email = '{$email}'";
-    $result = mysqli_query($conn, $query) or die("Email Query Failed");
+    $f_date = date("Y-m-d H:i:s");     // 2019-10-30 22:42:18(MySQL DATETIME format)
+
+    echo $f_date;
+    $forget_date_query = "UPDATE userdata set forgetdate = '$f_date' where email ='{$email}'";
+    $forget_date_result = mysqli_query($conn, $forget_date_query) or die("Email Query Failed"); 
+    // exit();
+    $query = "SELECT * from userdata where email = '{$email}' AND status = '0'";
+    $result = mysqli_query($conn, $query) or die("forgetdate Query Failed");
     if(mysqli_num_rows($result)>0){
         while($row = mysqli_fetch_assoc($result)){
             $id = $row['id'];
-            // $id_encode = base64_encode($id);
-            $body = "Heres the link to reset the password'http://localhost/i-think/login/repasshis.php?SsNPaNDa=$id_encode'";
-            // echo 1;
-            // $link = "<a href = 'resetpass.php?SsNPaNDa=$id_encode'>Recieve mail</a>";
+            $random = $row['random_no'];
+            // echo ($random);
+            $body = "Heres the link to reset the password'http://localhost/i-think/login/repasshis.php?rno=$random'";
+            // $link = "<a href = 'resetpass.php?SsNPaNDa=$random'>Recieve mail</a>";
         }
         if(mail($email,$subject,$body,$headers)){
-            echo "Email Sucessfully sent to $email";
+            echo "Email Sucessfully sent to $email please check the mail and click on the link";
+            echo "<script>alert('ok'); </script>";
         }else{
-            echo "Email Sending failed";
+            echo "Email Sending failed. Please re-enter the link";
         }
     }else{
         echo '<div class="alert-danger">Invalid email..!!</div>';
@@ -33,34 +43,61 @@ if(isset($_POST['submit'])){
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
-
     <title>Login!</title>
     <style>
-        .container{
-            height: 100vh;
-            width: 600px;
+        .box{
+            /* height: 100vh;
+            width: 600px; */
+            display: block;
+            width: 50%;
+            margin-left: 25%;
+            margin-top: 120px;
+            background-color: #E5E7E9;
+            border-width: 2px;
+            border-style: solid;
+            border-color: #AEB6BF;
+            border-radius: 10px;
+            padding: 50px 40px;
         }
         .log{
             border: 5px;
             border-radius: 2px;
         }
+        @media screen and (max-width:768px){
+            .box{
+            /* height: 100vh;
+            width: 600px; */
+            display: block;
+            width: auto;
+            margin-top: 120px;
+            margin-left: 1%;
+            margin-right: 1%;
+            background-color: #E5E7E9;
+            border-width: 2px;
+            border-style: solid;
+            border-color: #AEB6BF;
+            border-radius: 10px;
+            padding: 50px 20px;
+            }
+        }
     </style>
   </head>
   <body>
-    <h1 class="text-center">We Will help you to retrive your password!</h1>
     <div class="container">
-        <form action="" method="POST">
-            <div class="form-group">
-                <label><i class="fas fa-envelope"></i>&nbspEnter Email</label>
-                <input type="email" name="email" class="form-control">
-            </div>
-            <input type="submit" name="submit" class="btn-primary log"> Get the link to create new password</input>
+        <div class="box">
+        <h5 class="text-center">We Will help you to retrive your password!</h5>
+            <form action="" method="POST" style="margin-top:20px;">
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i>&nbspEnter Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="Enter your email here">
+                </div>
+                <input type="submit" name="submit" class="btn-primary log"> Get the link to create new password</input>
+            </form>
             <?php echo $link;?>
-        </form>
+        </div>
     </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
